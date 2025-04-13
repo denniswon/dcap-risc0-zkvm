@@ -1,16 +1,19 @@
-use risc0_build::{embed_methods_with_options, DockerOptions, GuestOptions};
+use risc0_build::embed_methods_with_options;
+use risc0_build::{DockerOptionsBuilder, GuestOptionsBuilder};
 use std::collections::HashMap;
 
 fn main() {
-    // Generate Rust source files for the methods crate.
-    embed_methods_with_options(HashMap::from([(
-        "dcap_guest",
-        GuestOptions {
-            features: Vec::new(),
-            use_docker: Some(DockerOptions {
-                root_dir: Some("../".into())
-            }),
-        },
-    )]));
+    let docker_options = DockerOptionsBuilder::default()
+        .root_dir("../")
+        .env(vec![("ENV_VAR".to_string(), "value".to_string())])
+        .build()
+        .unwrap();
 
+    let guest_options = GuestOptionsBuilder::default()
+        .use_docker(docker_options)
+        .build()
+        .unwrap();
+
+    // Generate Rust source files for the methods crate.
+    embed_methods_with_options(HashMap::from([("dcap_guest", guest_options)]));
 }
